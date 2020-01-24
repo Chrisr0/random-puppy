@@ -21,14 +21,15 @@ function storeResults(images, subreddit) {
     return getRandomImage;
 }
 
-function randomPuppy(subreddit) {
+function randomPuppy(subreddit, list) {
     subreddit = (typeof subreddit === 'string' && subreddit.length !== 0) ? subreddit : 'puppies';
+    list = (typeof list === 'string' && list.length !== 0) ? list : 'hot';
 
     if (randomCache[subreddit]) {
         return Promise.resolve(formatResult(randomCache[subreddit]));
     }
 
-    return got(`https://imgur.com/r/${subreddit}/hot.json`, {json: true})
+    return got(`https://imgur.com/r/${subreddit}/${list}.json`, { json: true })
         .then(response => storeResults(response.body.data, subreddit))
         .then(getRandomImage => formatResult(getRandomImage));
 }
@@ -50,22 +51,22 @@ function all(subreddit) {
     return eventEmitter;
 }
 
-function callback(subreddit, cb) {
-    randomPuppy(subreddit)
+function callback(subreddit, list, cb) {
+    randomPuppy(subreddit, list)
         .then(url => cb(null, url))
         .catch(err => cb(err));
 }
 
 // subreddit is optional
 // callback support is provided for a training exercise
-module.exports = (subreddit, cb) => {
+module.exports = (subreddit, list, cb) => {
     if (typeof cb === 'function') {
-        callback(subreddit, cb);
+        callback(subreddit, list, cb);
     } else if (typeof subreddit === 'function') {
-        callback(null, subreddit);
+        callback(null, null, subreddit);
     } else {
-        return randomPuppy(subreddit);
+        return randomPuppy(subreddit, list);
     }
 };
 
-module.exports.all = all;
+//module.exports.all = all;
