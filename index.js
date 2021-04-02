@@ -11,7 +11,8 @@ function formatResult(getRandomImage) {
     if (!imageData) {
         return;
     }
-    return `http://imgur.com/${imageData.hash}${imageData.ext.replace(/\?.*/, '')}`;
+    let link = imageData.images ? imageData.images[0].link : imageData.link
+    return link;
 }
 
 function storeResults(images, subreddit) {
@@ -29,7 +30,7 @@ function randomPuppy(subreddit, list) {
         return Promise.resolve(formatResult(randomCache[subreddit]));
     }
 
-    return got(`https://imgur.com/r/${subreddit}/${list}.json`, { json: true })
+    return got(`https://api.imgur.com/3/gallery/r/${subreddit}/${list}`, { json: true, headers: {Authorization: "Client-ID "+process.env.IMGURAPI_KEY} })
         .then(response => storeResults(response.body.data, subreddit))
         .then(getRandomImage => formatResult(getRandomImage));
 }
